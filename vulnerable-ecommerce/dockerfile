@@ -1,0 +1,24 @@
+FROM php:8.2-apache
+
+# Install dependencies (Node.js, npm, etc.)
+RUN apt-get update && \
+    apt-get install -y curl git unzip zip gnupg && \
+    curl -fsSL https://deb.nodesource.com/setup_18.x | bash - && \
+    apt-get install -y nodejs
+
+# Copy all files
+COPY . /var/www/html/
+
+# Set working directory to serve from React's build
+WORKDIR /var/www/html
+
+# Build the React app
+RUN cd vulnerable-ecommerce && npm install && npm run build
+
+# Move React build files to root
+RUN cp -r vulnerable-ecommerce/build/* /var/www/html/
+
+# Set proper Apache permissions
+RUN chown -R www-data:www-data /var/www/html
+
+EXPOSE 80
